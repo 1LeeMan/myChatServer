@@ -334,6 +334,7 @@ void TcpConnection::connectEstablished() //shared_ptr:1
 void TcpConnection::connectDestroyed()
 {
   loop_->assertInLoopThread();
+  printf("00000\n");
   if (state_ == kConnected)
   {
     setState(kDisconnected);
@@ -354,7 +355,6 @@ void TcpConnection::handleRead(Timestamp receiveTime)
     IO_now = Timestamp::now();
     if(adjustTimerCallBack_) 
       adjustTimerCallBack_(IO_now);
-    else printf("not servive\n");
     
     messageCallback_(shared_from_this(), &inputBuffer_, receiveTime);
     // shutdownAndForceCloseAfter(3);
@@ -411,6 +411,11 @@ void TcpConnection::handleWrite()
     LOG_TRACE << "Connection fd = " << channel_->fd()
               << " is down, no more writing";
   }
+}
+
+void TcpConnection::handleCloseforserver()
+{ 
+  loop_->runInLoop(std::bind(&TcpConnection::handleClose,this));  
 }
 
 void TcpConnection::handleClose() //shared_ptr:1

@@ -36,7 +36,7 @@ void EventLoopThreadPool::start(const ThreadInitCallback& cb)
   baseLoop_->assertInLoopThread();
 
   started_ = true;
-
+  printf("numThreads_ = %d\n", numThreads_);
   for (int i = 0; i < numThreads_; ++i)
   {
     char buf[name_.size() + 32];
@@ -49,6 +49,13 @@ void EventLoopThreadPool::start(const ThreadInitCallback& cb)
   {
     cb(baseLoop_);//不确定
   }
+}
+
+void EventLoopThreadPool::start_send()
+{
+  // for(int i = 0; i < numThreads_; i++){
+  //   workers.emplace_back();
+  // }
 }
 
 EventLoop* EventLoopThreadPool::getNextLoop()

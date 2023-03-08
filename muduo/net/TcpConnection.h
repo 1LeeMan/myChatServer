@@ -117,8 +117,7 @@ class TcpConnection : noncopyable,
   void connectEstablished();   // should be called only once
   // called when TcpServer has removed me from its map
   void connectDestroyed();  // should be called only once
-  void handleCloseforserver()
-  { handleClose();  }
+  void handleCloseforserver();
 
  private:
   enum StateE { kDisconnected, kConnecting, kConnected, kDisconnecting };
