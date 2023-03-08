@@ -334,7 +334,7 @@ void TcpConnection::connectEstablished() //shared_ptr:1
 void TcpConnection::connectDestroyed()
 {
   loop_->assertInLoopThread();
-  printf("00000\n");
+
   if (state_ == kConnected)
   {
     setState(kDisconnected);
