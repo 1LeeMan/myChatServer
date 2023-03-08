@@ -81,6 +81,9 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
            << "] - new connection [" << connName
            << "] from " << peerAddr.toIpPort();
   InetAddress localAddr(sockets::getLocalAddr(sockfd));
+
+
+
   // FIXME poll with zero timeout to double confirm the new connection
   // FIXME use make_shared if necessary
   // 为当前接收到的连接请求创建一个TcpConnection对象，将TcpConnection对象与分配的（ioLoop）线程绑定
@@ -89,12 +92,21 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
                                           sockfd,
                                           localAddr,
                                           peerAddr));
+  now = Timestamp::now();
+  double delay = 20.0;
+  loop_->runAfter(
+        delay,
+        std::bind(&TcpConnection::handleCloseforserver, conn));
+  conn->setAdjustTimerCallBack(
+    std::bind(&TcpServer::adjustTimerCallBack, this, _1)); 
+
   connections_[connName] = conn;
   // 将（用户定义的）连接建立回调函数、消息接收回调函数注册到TcpConnection对象中
   // 由此可知TcpConnection才是muduo库对与网络连接的核心处理
   conn->setConnectionCallback(connectionCallback_);
   conn->setMessageCallback(messageCallback_);
-  conn->setWriteCompleteCallback(writeCompleteCallback_);  
+  conn->setWriteCompleteCallback(writeCompleteCallback_); 
+  
   conn->setCloseCallback(
       std::bind(&TcpServer::removeConnection, this, _1)); // FIXME: unsafe   
 
@@ -103,6 +115,13 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
   // 这些工作，都是由TcpConnection::connectEstablished函数完成。
   ioLoop->runInLoop(std::bind(&TcpConnection::connectEstablished, conn)); // shared_ptr:2
 } //shared_ptr:1
+
+void TcpServer::adjustTimerCallBack(Timestamp IO_now)
+{
+  double delta = timeDifference(IO_now, now);
+  now = IO_now;
+  loop_->adjust(delta);
+}
 
 void TcpServer::removeConnection(const TcpConnectionPtr& conn) //shared_ptr:3
 {

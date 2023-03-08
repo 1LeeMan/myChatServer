@@ -90,6 +90,7 @@ class TcpServer : noncopyable
   { writeCompleteCallback_ = cb; }
 
  private:
+  void adjustTimerCallBack(Timestamp IO_now);
   /// Not thread safe, but in loop
   void newConnection(int sockfd, const InetAddress& peerAddr);
   /// Thread safe.
@@ -112,6 +113,7 @@ class TcpServer : noncopyable
   // always in loop thread
   int nextConnId_;
   ConnectionMap connections_;
+  Timestamp now;
 };
 
 }  // namespace net

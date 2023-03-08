@@ -65,6 +65,7 @@ typedef std::function<void (const TcpConnectionPtr&)> ConnectionCallback;
 typedef std::function<void (const TcpConnectionPtr&)> CloseCallback;
 typedef std::function<void (const TcpConnectionPtr&)> WriteCompleteCallback;
 typedef std::function<void (const TcpConnectionPtr&, size_t)> HighWaterMarkCallback;
+typedef std::function<void (Timestamp)> AdjustTimerCallBack;
 
 // the data has been read to (buf, len)
 typedef std::function<void (const TcpConnectionPtr&,

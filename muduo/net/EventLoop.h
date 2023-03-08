@@ -88,6 +88,7 @@ class EventLoop : noncopyable
   /// Safe to call from other threads.
   ///
   TimerId runAfter(double delay, TimerCallback cb);
+  TimerId runAfter(Timestamp timestamp, double delay, TimerCallback cb);
   ///
   /// Runs callback every @c interval seconds.
   /// Safe to call from other threads.
@@ -97,6 +98,8 @@ class EventLoop : noncopyable
   /// Cancels the timer.
   /// Safe to call from other threads.
   ///
+  void adjust(double time);
+
   void cancel(TimerId timerId);
 
   // internal usage

@@ -68,7 +68,7 @@ class TcpConnection : noncopyable,
   // void send(Buffer&& message); // C++11
   void send(Buffer* message);  // this one will swap data
   void shutdown(); // NOT thread safe, no simultaneous calling
-  // void shutdownAndForceCloseAfter(double seconds); // NOT thread safe, no simultaneous calling
+  void shutdownAndForceCloseAfter(double seconds); // NOT thread safe, no simultaneous calling
   void forceClose();
   void forceCloseWithDelay(double seconds);
   void setTcpNoDelay(bool on);
@@ -98,6 +98,7 @@ class TcpConnection : noncopyable,
   void setHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t highWaterMark)
   { highWaterMarkCallback_ = cb; highWaterMark_ = highWaterMark; }
 
+
   /// Advanced interface
   Buffer* inputBuffer()
   { return &inputBuffer_; }
@@ -109,10 +110,15 @@ class TcpConnection : noncopyable,
   void setCloseCallback(const CloseCallback& cb)
   { closeCallback_ = cb; }
 
+  void setAdjustTimerCallBack(const AdjustTimerCallBack& cb)
+  { adjustTimerCallBack_ = cb; }
+
   // called when TcpServer accepts a new connection
   void connectEstablished();   // should be called only once
   // called when TcpServer has removed me from its map
   void connectDestroyed();  // should be called only once
+  void handleCloseforserver()
+  { handleClose();  }
 
  private:
   enum StateE { kDisconnected, kConnecting, kConnected, kDisconnecting };
@@ -124,7 +130,7 @@ class TcpConnection : noncopyable,
   void sendInLoop(const StringPiece& message);
   void sendInLoop(const void* message, size_t len);
   void shutdownInLoop();
-  // void shutdownAndForceCloseInLoop(double seconds);
+  void shutdownAndForceCloseInLoop(double seconds);
   void forceCloseInLoop();
   void setState(StateE s) { state_ = s; }
   const char* stateToString() const;
@@ -145,10 +151,12 @@ class TcpConnection : noncopyable,
   WriteCompleteCallback writeCompleteCallback_;
   HighWaterMarkCallback highWaterMarkCallback_;
   CloseCallback closeCallback_;
+  AdjustTimerCallBack adjustTimerCallBack_;
   size_t highWaterMark_;
   Buffer inputBuffer_;
   Buffer outputBuffer_; // FIXME: use list<Buffer> as output buffer.
   boost::any context_;
+  Timestamp IO_now;
   // FIXME: creationTime_, lastReceiveTime_
   //        bytesReceived_, bytesSent_
 };

@@ -187,11 +187,21 @@ TimerId EventLoop::runAfter(double delay, TimerCallback cb)
   Timestamp time(addTime(Timestamp::now(), delay));
   return runAt(time, std::move(cb));
 }
+TimerId EventLoop::runAfter(Timestamp timestamp, double delay, TimerCallback cb)
+{
+  Timestamp time(addTime(timestamp, delay));
+  return runAt(time, std::move(cb));
+}
 
 TimerId EventLoop::runEvery(double interval, TimerCallback cb)
 {
   Timestamp time(addTime(Timestamp::now(), interval));
   return timerQueue_->addTimer(std::move(cb), time, interval);
+}
+
+void EventLoop::adjust(double time)
+{
+  timerQueue_->adjustTimer(time);
 }
 
 void EventLoop::cancel(TimerId timerId)

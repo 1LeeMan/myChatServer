@@ -139,6 +139,17 @@ void TimerQueue::addTimerInLoop(Timer* timer)
     resetTimerfd(timerfd_, timer->expiration());
   }
 }
+inline bool operator<(TimerQueue::Entry a, TimerQueue::Entry b)
+  {
+    return a.first < b.first;
+  }
+
+void TimerQueue::adjustTimer(double time)
+{
+  for(TimerList::iterator iter = timers_.begin(); iter!=timers_.end(); iter++){
+    const_cast<Timestamp&>(iter->first) = addTime(iter->first, time); //set iterator是const，不允许修改内部元素的值。这一点容易理解。因为key修改后内部红黑树需要重新排序，此时iterator并不知道应指向的位置
+  }
+}
 
 void TimerQueue::cancelInLoop(TimerId timerId)
 {
@@ -185,9 +196,9 @@ std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now)
   assert(timers_.size() == activeTimers_.size());
   std::vector<Entry> expired;
   Entry sentry(now, reinterpret_cast<Timer*>(UINTPTR_MAX));
-  TimerList::iterator end = timers_.lower_bound(sentry);
-  assert(end == timers_.end() || now < end->first);
-  std::copy(timers_.begin(), end, back_inserter(expired));
+  TimerList::iterator end = timers_.lower_bound(sentry); //二分查找返回第一个>=now的值
+  assert(end == timers_.end() || now < end->first); //全都超时 || 部分未超时
+  std::copy(timers_.begin(), end, back_inserter(expired)); //back_inserter:插入iterator.将timer元素依次push_back入expired
   timers_.erase(timers_.begin(), end);
 
   for (const Entry& it : expired)
@@ -239,7 +250,7 @@ bool TimerQueue::insert(Timer* timer)
   bool earliestChanged = false;
   Timestamp when = timer->expiration();
   TimerList::iterator it = timers_.begin();
-  if (it == timers_.end() || when < it->first)
+  if (it == timers_.end() || when < it->first) //timers_为空 || timer放在首位
   {
     earliestChanged = true;
   }

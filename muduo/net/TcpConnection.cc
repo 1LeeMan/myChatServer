@@ -112,18 +112,15 @@ void TcpConnection::send(const StringPiece& message)
 // FIXME efficiency!!!
 void TcpConnection::send(Buffer* buf)
 {
-  // printf("sending...................\n");
   if (state_ == kConnected)
   {
     if (loop_->isInLoopThread())//调用send的thread是tcpconnection的loop的thread？必须在loop thread内执行
     {
-      // printf("loop_->isInLoopThread() true\n");
       sendInLoop(buf->peek(), buf->readableBytes());
       buf->retrieveAll();
     }
     else
     {
-      printf("loop_->isInLoopThread() false\n");
       void (TcpConnection::*fp)(const StringPiece& message) = &TcpConnection::sendInLoop;
       loop_->runInLoop(
           std::bind(fp,
@@ -215,29 +212,29 @@ void TcpConnection::shutdownInLoop()
   }
 }
 
-// void TcpConnection::shutdownAndForceCloseAfter(double seconds)
-// {
-//   // FIXME: use compare and swap
-//   if (state_ == kConnected)
-//   {
-//     setState(kDisconnecting);
-//     loop_->runInLoop(std::bind(&TcpConnection::shutdownAndForceCloseInLoop, this, seconds));
-//   }
-// }
+void TcpConnection::shutdownAndForceCloseAfter(double seconds)
+{
+  // FIXME: use compare and swap
+  if (state_ == kConnected)
+  {
+    setState(kDisconnecting);
+    loop_->runInLoop(std::bind(&TcpConnection::shutdownAndForceCloseInLoop, this, seconds));
+  }
+}
 
-// void TcpConnection::shutdownAndForceCloseInLoop(double seconds)
-// {
-//   loop_->assertInLoopThread();
-//   if (!channel_->isWriting())
-//   {
-//     // we are not writing
-//     socket_->shutdownWrite();
-//   }
-//   loop_->runAfter(
-//       seconds,
-//       makeWeakCallback(shared_from_this(),
-//                        &TcpConnection::forceCloseInLoop));
-// }
+void TcpConnection::shutdownAndForceCloseInLoop(double seconds)
+{
+  loop_->assertInLoopThread();
+  if (!channel_->isWriting())
+  {
+    // we are not writing
+    socket_->shutdownWrite();
+  }
+  loop_->runAfter(
+      seconds,
+      makeWeakCallback(shared_from_this(),
+                       &TcpConnection::forceCloseInLoop));
+}
 
 void TcpConnection::forceClose()
 {
@@ -354,10 +351,18 @@ void TcpConnection::handleRead(Timestamp receiveTime)
   ssize_t n = inputBuffer_.readFd(channel_->fd(), &savedErrno);
   if (n > 0)
   {
+    IO_now = Timestamp::now();
+    if(adjustTimerCallBack_) 
+      adjustTimerCallBack_(IO_now);
+    else printf("not servive\n");
+    
     messageCallback_(shared_from_this(), &inputBuffer_, receiveTime);
+    // shutdownAndForceCloseAfter(3);
+    // forceCloseWithDelay(3);
   }
   else if (n == 0)//发送端发送完毕
   {
+    printf("handleClose....\n");
     handleClose();
   }
   else
