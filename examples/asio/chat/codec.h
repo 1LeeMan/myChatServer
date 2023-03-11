@@ -1,6 +1,7 @@
 #ifndef MUDUO_EXAMPLES_ASIO_CHAT_CODEC_H
 #define MUDUO_EXAMPLES_ASIO_CHAT_CODEC_H
-
+#include <string>
+#include <climits>
 #include "muduo/base/Logging.h"
 #include "muduo/net/Buffer.h"
 #include "muduo/net/Endian.h"
@@ -13,22 +14,24 @@ class LengthHeaderCodec : muduo::noncopyable
   typedef std::function<void (const muduo::net::TcpConnectionPtr&,
                                 const muduo::string& message,
                                 muduo::Timestamp)> StringMessageCallback;
+  typedef std::function<void (const muduo::string& message)> MonitorCallback;
 
   explicit LengthHeaderCodec(const StringMessageCallback& cb)
     : messageCallback_(cb)
   {
   }
 
+  void setMonitorCallback(MonitorCallback cb)
+  {
+    monitorCallback_ = cb;
+  }
+
   void onMessage(const muduo::net::TcpConnectionPtr& conn,
                  muduo::net::Buffer* buf,
                  muduo::Timestamp receiveTime)
   {
-    // auto ioLoop = conn->getLoop();
-    // if (ioLoop->isInLoopThread()){printf("onMessage true\n");}
-    // else printf("false\n");
     while (buf->readableBytes() >= kHeaderLen) // kHeaderLen == 4
     {
-      // printf("onMessage\n");
       // FIXME: use Buffer::peekInt32()
       const void* data = buf->peek();
       int32_t be32 = *static_cast<const int32_t*>(data); // SIGBUS
@@ -42,7 +45,11 @@ class LengthHeaderCodec : muduo::noncopyable
       else if (buf->readableBytes() >= len + kHeaderLen)
       {
         buf->retrieve(kHeaderLen);
+        int threadId = conn->getLoop()->getThreadId();
+        minthreadId = (threadId < minthreadId)?threadId: minthreadId;
         muduo::string message(buf->peek(), len);
+        muduo::string messagewithuser = "User" + std::to_string(threadId-minthreadId) + ": "+ message + "\n";
+        if(monitorCallback_) monitorCallback_(messagewithuser);
         messageCallback_(conn, message, receiveTime);
         buf->retrieve(len);
       }
@@ -66,7 +73,9 @@ class LengthHeaderCodec : muduo::noncopyable
   }
 
  private:
+  int minthreadId = INT_MAX;
   StringMessageCallback messageCallback_;
+  MonitorCallback monitorCallback_;
   const static size_t kHeaderLen = sizeof(int32_t);
 };
 

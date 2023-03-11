@@ -93,7 +93,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
                                           localAddr,
                                           peerAddr));
   now = Timestamp::now();
-  double delay = 6.0;
+  double delay = 60.0;
   loop_->runAfter(
         delay,
         std::bind(&TcpConnection::handleCloseforserver, conn));

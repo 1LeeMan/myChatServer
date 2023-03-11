@@ -50,6 +50,8 @@ class HttpServer : noncopyable
   }
 
   void start();
+  void monitorCallback(const muduo::string& message);
+  void defaultHttpCallback(const TcpConnectionPtr& conn, const HttpRequest&, HttpResponse* resp);
 
  private:
   void onConnection(const TcpConnectionPtr& conn);
@@ -60,6 +62,7 @@ class HttpServer : noncopyable
 
   TcpServer server_;
   HttpCallback httpCallback_;
+  Buffer monitorBuf;
 };
 
 }  // namespace net

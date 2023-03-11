@@ -36,7 +36,7 @@ class EventLoopThreadPool : noncopyable
   ~EventLoopThreadPool();
   void setThreadNum(int numThreads) { numThreads_ = numThreads; }
   void start(const ThreadInitCallback& cb = ThreadInitCallback());
-  void start_send();
+  // void start_send(const ThreadInitCallback& cb);
   // valid after calling start()
   /// round-robin
   EventLoop* getNextLoop();
@@ -61,6 +61,7 @@ class EventLoopThreadPool : noncopyable
   int next_;
   std::vector<std::unique_ptr<EventLoopThread>> threads_;
   std::vector<EventLoop*> loops_;
+  // SendThreadPool pool_{4};
 };
 
 }  // namespace net

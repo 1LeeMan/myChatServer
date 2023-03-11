@@ -5,7 +5,7 @@ add_executable(asio_chat_loadtest loadtest.cc)
 target_link_libraries(asio_chat_loadtest muduo_net)
 
 add_executable(asio_chat_server server.cc)
-target_link_libraries(asio_chat_server muduo_net)
+target_link_libraries(asio_chat_server muduo_net muduo_http)
 
 add_executable(asio_chat_server_threaded server_threaded.cc)
 target_link_libraries(asio_chat_server_threaded muduo_net)

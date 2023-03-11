@@ -126,6 +126,9 @@ class EventLoop : noncopyable
   const boost::any& getContext() const
   { return context_; }
 
+  int getThreadId()
+  { return threadId_;}
+
   boost::any* getMutableContext()
   { return &context_; }
 

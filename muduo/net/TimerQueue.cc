@@ -72,7 +72,7 @@ void resetTimerfd(int timerfd, Timestamp expiration)
   struct itimerspec oldValue;
   memZero(&newValue, sizeof newValue);
   memZero(&oldValue, sizeof oldValue);
-  newValue.it_value = howMuchTimeFromNow(expiration);
+  newValue.it_value = howMuchTimeFromNow(expiration);// =0 定时一次
   int ret = ::timerfd_settime(timerfd, 0, &newValue, &oldValue);
   if (ret)
   {

@@ -156,6 +156,7 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
       remaining = len - nwrote;
       if (remaining == 0 && writeCompleteCallback_)//message全部发出
       {
+        printf("nonononono\n");
         loop_->queueInLoop(std::bind(writeCompleteCallback_, shared_from_this()));
       }
     }
@@ -357,8 +358,6 @@ void TcpConnection::handleRead(Timestamp receiveTime)
       adjustTimerCallBack_(IO_now);
     
     messageCallback_(shared_from_this(), &inputBuffer_, receiveTime);
-    // shutdownAndForceCloseAfter(3);
-    // forceCloseWithDelay(3);
   }
   else if (n == 0)//发送端发送完毕
   {

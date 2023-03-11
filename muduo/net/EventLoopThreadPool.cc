@@ -51,12 +51,22 @@ void EventLoopThreadPool::start(const ThreadInitCallback& cb)
   }
 }
 
-void EventLoopThreadPool::start_send()
-{
-  // for(int i = 0; i < numThreads_; i++){
-  //   workers.emplace_back();
-  // }
-}
+// void EventLoopThreadPool::start_send(const ThreadInitCallback& cb)
+// {
+//   baseLoop_->assertInLoopThread();
+
+//   for(int i = 0; i < numThreads_; i++)
+//   {
+//     char buf[name_.size() + 32];
+//     snprintf(buf, sizeof buf, "%s%d", name_.c_str(), i);
+    
+//   }
+//   if (numThreads_ == 0 && cb)
+//   {
+//     cb(baseLoop_);//不确定
+//   }
+
+// }
 
 EventLoop* EventLoopThreadPool::getNextLoop()
 {

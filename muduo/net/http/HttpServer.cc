@@ -26,9 +26,15 @@ namespace detail
 
 void defaultHttpCallback(const HttpRequest&, HttpResponse* resp)
 {
-  resp->setStatusCode(HttpResponse::k404NotFound);
-  resp->setStatusMessage("Not Found");
-  resp->setCloseConnection(true);
+  // resp->setStatusCode(HttpResponse::k404NotFound);
+  // resp->setStatusMessage("Not Found");
+  // resp->setCloseConnection(true);
+  
+  resp->setStatusCode(HttpResponse::k200Ok);
+  resp->setStatusMessage("OK");
+  resp->setContentType("text/plain");
+  resp->addHeader("Server", "Webserver");
+  // resp->setBody("hello, world!\n");
 }
 
 }  // namespace detail
@@ -39,8 +45,8 @@ HttpServer::HttpServer(EventLoop* loop,
                        const InetAddress& listenAddr,
                        const string& name,
                        TcpServer::Option option)
-  : server_(loop, listenAddr, name, option),
-    httpCallback_(detail::defaultHttpCallback)
+  : server_(loop, listenAddr, name, option)
+    // httpCallback_(detail::defaultHttpCallback)
 {
   server_.setConnectionCallback(
       std::bind(&HttpServer::onConnection, this, _1));
@@ -53,6 +59,11 @@ void HttpServer::start()
   LOG_WARN << "HttpServer[" << server_.name()
     << "] starts listening on " << server_.ipPort();
   server_.start();
+}
+
+void HttpServer::monitorCallback(const muduo::string& message)
+{
+  monitorBuf.append(message.data(), message.size());
 }
 
 void HttpServer::onConnection(const TcpConnectionPtr& conn)
@@ -88,7 +99,8 @@ void HttpServer::onRequest(const TcpConnectionPtr& conn, const HttpRequest& req)
   bool close = connection == "close" ||
     (req.getVersion() == HttpRequest::kHttp10 && connection != "Keep-Alive");
   HttpResponse response(close);
-  httpCallback_(req, &response);
+  // httpCallback_(req, &response);
+  defaultHttpCallback(conn, req, &response);
   Buffer buf;
   response.appendToBuffer(&buf);
   conn->send(&buf);
@@ -98,3 +110,17 @@ void HttpServer::onRequest(const TcpConnectionPtr& conn, const HttpRequest& req)
   }
 }
 
+void HttpServer::defaultHttpCallback(const TcpConnectionPtr& conn, const HttpRequest&, HttpResponse* resp)
+{
+  // resp->setStatusCode(HttpResponse::k404NotFound);
+  // resp->setStatusMessage("Not Found");
+  // resp->setCloseConnection(true);
+  
+  resp->setStatusCode(HttpResponse::k200Ok);
+  resp->setStatusMessage("OK");
+  resp->setContentType("text/plain");
+  resp->addHeader("Server", "Webserver");
+  string output("\r\n\r\nchat records are as follows!\n\r\n\r\n");
+  output = output + string(monitorBuf.peek(), monitorBuf.readableBytes());
+  resp->setBody(output);
+}
