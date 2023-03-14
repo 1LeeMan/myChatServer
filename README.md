@@ -31,15 +31,57 @@ EventLoop拥有与线程相同的生命期。
 * 当所有client长时间建立连接却没有IO对话，为避免资源浪费。自各client通话后开始启动定时器计时，根据当前时间和延迟时间建立定时器timer并存入set数据结构，每发生通话都会在set内顺时延长定时器定时时间。当定时时间到达会在所有client所在线程中关闭连接。
 
 * 性能测评:建立连接后server将接收到client的message回写给client，client再次回写给server，直到超时后，client所有连接断开连接为止。记录时间内的吞吐量情况。
-|     threadNum     |    sessionCount    |      throughput(MiB/s)    |
-----------------------------------------------------------------------
-|         1         |         100        |        2137.1571875       |
-|         2         |         100        |        3255.46796875      |
-|         3         |         100        |        3513.65546875      |
-|         4         |         100        |         3304.92875        |
-|         1         |         1000       |        1370.72609375      |
-|         2         |         1000       |        1622.77046875      |
-|         3         |         1000       |        1685.14015625      |
-|         4         |         1000       |        1677.07796875      |
+
+<table class="tg">
+<thead>
+  <tr>
+    <th class="tg-0pky"> 			                 threadNum 			          			 		</th>
+    <th class="tg-0pky"> 			             sessionCount 			         			 		</th>
+    <th class="tg-0pky"> 			              throughput(MiB/s) 		</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td class="tg-0pky"> 			1 		</td>
+    <td class="tg-0pky"> 			100 		</td>
+    <td class="tg-0pky"> 			2137.1571875 		</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky"> 			2 		</td>
+    <td class="tg-0pky"> 			100 		</td>
+    <td class="tg-0pky"> 			3255.46796875 		</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky"> 			3 		</td>
+    <td class="tg-0pky"> 			100 		</td>
+    <td class="tg-0pky"> 			3513.65546875 		</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky"> 			4 		</td>
+    <td class="tg-0pky"> 			100 		</td>
+    <td class="tg-0pky"> 			3304.92875 		</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky"> 			1 		</td>
+    <td class="tg-0pky"> 			1000 		</td>
+    <td class="tg-0pky"> 			1370.72609375 		</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky"> 			2 		</td>
+    <td class="tg-0pky"> 			1000 		</td>
+    <td class="tg-0pky"> 			1622.77046875 		</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky"> 			3 		</td>
+    <td class="tg-0pky"> 			1000 		</td>
+    <td class="tg-0pky"> 			1685.14015625 		</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky"> 			4 		</td>
+    <td class="tg-0pky"> 			1000 		</td>
+    <td class="tg-0pky"> 			1677.07796875 		</td>
+  </tr>
+</tbody>
+</table>
 
 * 支持解析HTTP报文的GET请求，并响应聊天信息。
